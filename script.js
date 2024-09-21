@@ -9,6 +9,7 @@ window.onload = function () {
 
     let hours = 0, minutes = 0, seconds = 0;
     let stopwatchInterval;
+    let accumulatedText = ''; // To store recognized text across sessions
 
     // Check for Web Speech API support
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -24,14 +25,12 @@ window.onload = function () {
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
-    // Request microphone permission and handle errors
+    // Request microphone permission
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(function(stream) {
-            // Microphone access granted
             console.log('Microphone access granted.');
         })
         .catch(function(err) {
-            // Handle errors if microphone access is denied
             console.error('Microphone access denied: ', err);
             voiceText.textContent = "Microphone access is required for voice recognition.";
             actionBtn.disabled = true;
@@ -67,25 +66,22 @@ window.onload = function () {
         stopwatchElem.textContent = "00:00:00";
     }
 
-    // Handle voice recognition results
+    // Handle voice recognition results in real-time
     recognition.onresult = function (event) {
         let interimTranscript = '';
         let finalTranscript = '';
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript.trim().toLowerCase();
+            const transcript = event.results[i][0].transcript.trim();
             if (event.results[i].isFinal) {
                 finalTranscript += transcript + ' ';
-                if (transcript === 'stop') {
-                    stopRecognition();
-                } else if (transcript === 'resume') {
-                    startRecognition();
-                }
             } else {
-                interimTranscript += transcript;
+                interimTranscript += transcript + ' ';
             }
         }
-        voiceText.textContent = finalTranscript || interimTranscript;
+
+        accumulatedText += finalTranscript; // Append final transcripts to accumulated text
+        voiceText.textContent = accumulatedText + interimTranscript; // Update with both final and interim text
     };
 
     // Start or Resume Recognition
