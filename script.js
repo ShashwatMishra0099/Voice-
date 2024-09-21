@@ -1,4 +1,3 @@
-// script.js
 window.onload = function () {
     const actionBtn = document.getElementById('actionBtn');
     const voiceText = document.getElementById('voiceText');
@@ -24,6 +23,19 @@ window.onload = function () {
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
+
+    // Request microphone permission and handle errors
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream) {
+            // Microphone access granted
+            console.log('Microphone access granted.');
+        })
+        .catch(function(err) {
+            // Handle errors if microphone access is denied
+            console.error('Microphone access denied: ', err);
+            voiceText.textContent = "Microphone access is required for voice recognition.";
+            actionBtn.disabled = true;
+        });
 
     // Start the stopwatch
     function startStopwatch() {
